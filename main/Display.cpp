@@ -1,0 +1,58 @@
+#include <bsp/esp-box-3.h>
+
+#include "Display.hpp"
+
+static constexpr auto TAG = "Display";
+
+Display::Display()
+    : queue_{8}
+{
+    ESP_LOGI(TAG, "initializing display");
+
+    ESP_ERROR_CHECK(bsp_display_start() ? ESP_OK : ESP_FAIL);
+    ESP_ERROR_CHECK(bsp_display_brightness_set(100));
+
+    ESP_ERROR_CHECK(bsp_display_lock(0) ? ESP_OK : ESP_FAIL);
+
+    lv_obj_t* screen = lv_screen_active();
+    auto const label = lv_label_create(screen);
+    lv_obj_set_size(label, LV_PCT(100), LV_PCT(20));
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_label_set_text(label, "Hello, I am AIVAS");
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_style_text_font(label, LV_FONT_DEFAULT, 0);
+    lv_obj_center(label);
+    bsp_display_unlock();
+    label_ = label;
+
+    task_.emplace("ui", [this] { uiTask(); });
+}
+
+Display::~Display()
+{
+    task_.reset();
+}
+
+void Display::postText(std::string text) const
+{
+    queue_.emplace(portMAX_DELAY, std::move(text));
+}
+
+void Display::uiTask()
+{
+    if (lastRefresh_ == 0) {
+        lastRefresh_ = xTaskGetTickCount();
+    }
+
+    if (bsp_display_lock(100)) {
+        lv_timer_handler();
+
+        while (auto const received = queue_.receive(0)) {
+            lv_label_set_text(static_cast<lv_obj_t*>(label_), received->c_str());
+        }
+
+        bsp_display_unlock();
+    }
+
+    vTaskDelayUntil(&lastRefresh_, pdMS_TO_TICKS(refreshDelay));
+}

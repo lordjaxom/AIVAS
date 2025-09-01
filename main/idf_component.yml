@@ -1,0 +1,8 @@
+## IDF Component Manager Manifest File
+dependencies:
+  ## Required IDF version
+  idf:
+    version: '>=4.1.0'
+  espressif/esp-box-3: '*'
+  espressif/esp-sr: '*'
+  espressif/esp-boost: '*'
