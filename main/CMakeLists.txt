@@ -19,4 +19,5 @@ idf_component_register(
             esp-box-3
             esp-sr
             esp-boost
+            mqtt
 )
