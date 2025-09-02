@@ -1,6 +1,8 @@
 #ifndef AIVAS_IOT_CONTEXT_HPP
 #define AIVAS_IOT_CONTEXT_HPP
 
+#include <functional>
+
 #include "Component.hpp"
 #include "Ringbuffer.hpp"
 

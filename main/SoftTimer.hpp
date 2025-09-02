@@ -1,7 +1,6 @@
 #ifndef ESPIDF_IOT_SOFTTIMER_HPP
 #define ESPIDF_IOT_SOFTTIMER_HPP
 
-#include <cstdint>
 #include <functional>
 
 class Context;

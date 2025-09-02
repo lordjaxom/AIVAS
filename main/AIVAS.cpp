@@ -28,6 +28,10 @@ private:
     int count_{};
 };
 
+class Test: public Component<Scope::named>
+{
+};
+
 auto app = make_application(
     context("Office-Aivas-Companion"),
     wiFi("VillaKunterbunt", "sacomoco02047781"),

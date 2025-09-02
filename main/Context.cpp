@@ -11,13 +11,13 @@ Context::Context(char const* clientId)
 
 void Context::dispatch(Runnable runnable) const
 {
-    queue_.emplace(portMAX_DELAY, std::move(runnable));
+    queue_.acquire(std::move(runnable));
 }
 
 void Context::run() const
 {
     for (;;) {
-        if (auto const received = queue_.receive(portMAX_DELAY)) {
+        if (auto const received = queue_.receive()) {
             (*received)();
         }
     }

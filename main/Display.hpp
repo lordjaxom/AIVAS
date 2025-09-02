@@ -7,10 +7,11 @@
 #include "Component.hpp"
 #include "Ringbuffer.hpp"
 #include "Task.hpp"
+#include "Time.hpp"
 
 class Display : public Component<Scope::singleton>
 {
-    static constexpr size_t refreshDelay = 40; // 25 Hz
+    static constexpr auto refreshDelay = Duration::millis(1000 / 25); // 25 Hz
 
 public:
     Display();
@@ -32,8 +33,8 @@ private:
     // void applyTextLocked(const char* txt); // nur im UI-Task aufrufen (LVGL locked)
 
     Ringbuffer<std::string> queue_;
+    uint32_t lastRefresh_;
     std::optional<Task> task_;
-    uint32_t lastRefresh_{};
     void* label_{};
 };
 

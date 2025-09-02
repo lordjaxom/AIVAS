@@ -6,6 +6,7 @@ idf_component_register(
             Ringbuffer.cpp
             SoftTimer.cpp
             Task.cpp
+            Time.cpp
             WiFi.cpp
         AIVAS.cpp
         INCLUDE_DIRS .

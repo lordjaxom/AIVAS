@@ -5,7 +5,8 @@
 static constexpr auto TAG = "Display";
 
 Display::Display()
-    : queue_{8}
+    : queue_{8},
+      lastRefresh_{xTaskGetTickCount()}
 {
     ESP_LOGI(TAG, "initializing display");
 
@@ -35,24 +36,20 @@ Display::~Display()
 
 void Display::postText(std::string text) const
 {
-    queue_.emplace(portMAX_DELAY, std::move(text));
+    queue_.acquire(std::move(text));
 }
 
 void Display::uiTask()
 {
-    if (lastRefresh_ == 0) {
-        lastRefresh_ = xTaskGetTickCount();
-    }
-
     if (bsp_display_lock(100)) {
         lv_timer_handler();
 
-        while (auto const received = queue_.receive(0)) {
+        while (auto const received = queue_.receive(Duration::none())) {
             lv_label_set_text(static_cast<lv_obj_t*>(label_), received->c_str());
         }
 
         bsp_display_unlock();
     }
 
-    vTaskDelayUntil(&lastRefresh_, pdMS_TO_TICKS(refreshDelay));
+    xTaskDelayUntil(&lastRefresh_, refreshDelay.ticks());
 }

@@ -4,50 +4,51 @@
 #include "Application.hpp"
 #include "Ringbuffer.hpp"
 
-static void sendComplete(void* handle, void* item)
+detail::ringbuffer_deleter::ringbuffer_deleter(void* handle, ReturnFn const returnFn)
+    : handle_(handle),
+      returnFn_(returnFn)
 {
-    xRingbufferSendComplete(handle, item);
 }
-
-detail::ringbuffer_deleter::ringbuffer_deleter(void* handle, Function const function)
-    : handle_{handle},
-      function_{function}
+detail::ringbuffer_deleter& detail::ringbuffer_deleter::destroy(DestroyFn const destroyFn)
 {
+    destroyFn_ = destroyFn;
+    return *this;
 }
 
 void detail::ringbuffer_deleter::operator()(void* item) const
 {
-    if (handle_ != nullptr && item != nullptr) {
-        function_(handle_, item);
+    if (handle_ != nullptr) {
+        if (destroyFn_ != nullptr) destroyFn_(item);
+        returnFn_(handle_, item);
     }
 }
 
-RingbufferBase::RingbufferBase(size_t const capacity, size_t const itemSize) noexcept
+Ringbuffer<void>::Ringbuffer(size_t const capacity, size_t const itemSize)
     : itemSize_{itemSize},
       handle_{xRingbufferCreateNoSplit(itemSize_, capacity)}
 {
     configASSERT(handle_ != nullptr);
 }
 
-RingbufferBase::~RingbufferBase()
+Ringbuffer<void>::~Ringbuffer()
 {
     vRingbufferDelete(handle_);
 }
 
-RingbufferBase::Pointer RingbufferBase::acquire(uint32_t const timeout) const
+Ringbuffer<void>::Pointer Ringbuffer<void>::acquire(Duration const timeout) const
 {
     void* item;
-    if (auto const ticks = timeout != portMAX_DELAY ? pdMS_TO_TICKS(timeout) : portMAX_DELAY; // TODO
-        xRingbufferSendAcquire(handle_, &item, itemSize_, ticks)) {
-        return {item, detail::ringbuffer_deleter{handle_, &sendComplete}};
+    if (xRingbufferSendAcquire(handle_, &item, itemSize_, timeout.ticks())) {
+        return {item, detail::ringbuffer_deleter{handle_, [](auto... args) { xRingbufferSendComplete(args...); }}};
     }
     return nullptr;
 }
 
-RingbufferBase::Pointer RingbufferBase::receive(uint32_t const timeout) const
+Ringbuffer<void>::Pointer Ringbuffer<void>::receive(Duration const timeout) const
 {
     size_t itemSize;
-    auto const ticks = timeout != portMAX_DELAY ? pdMS_TO_TICKS(timeout) : portMAX_DELAY; // TODO
-    void* item = xRingbufferReceive(handle_, &itemSize, ticks);
-    return {item, detail::ringbuffer_deleter{handle_, &vRingbufferReturnItem}};
+    if (void* item = xRingbufferReceive(handle_, &itemSize, timeout.ticks()); item != nullptr) {
+        return {item, detail::ringbuffer_deleter{handle_, &vRingbufferReturnItem}};
+    }
+    return nullptr;
 }

@@ -2,7 +2,6 @@
 #define AIVAS_IOT_COMPONENT_HPP
 
 #include <cstddef>
-#include <functional>
 #include <memory>
 #include <tuple>
 #include <type_traits>
@@ -40,7 +39,6 @@ namespace detail {
     {
         using key_type = component_key<T, Name>;
         using value_type = key_type::value_type;
-        static constexpr auto name = Name;
         std::tuple<std::decay_t<Args>...> args;
     };
 }
@@ -62,7 +60,6 @@ struct dep
 {
     using key_type = detail::component_key<T, Name>;
     using value_type = key_type::value_type;
-    static constexpr auto name = Name; // empty denotes singleton
 };
 
 namespace detail {

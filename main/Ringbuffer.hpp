@@ -1,35 +1,41 @@
 #ifndef ESPIDF_IOT_RINGBUFFER_HPP
 #define ESPIDF_IOT_RINGBUFFER_HPP
 
-#include <cstddef>
 #include <memory>
+
+#include "Time.hpp"
 
 namespace detail {
     struct ringbuffer_deleter
     {
-        using Function = void(*)(void* handle, void* item);
-        explicit ringbuffer_deleter(void* handle = nullptr, Function function = [](auto...) {});
+        using ReturnFn = void(*)(void* handle, void* item);
+        using DestroyFn = void(*)(void* item);
+        explicit ringbuffer_deleter(void* handle = nullptr, ReturnFn returnFn = nullptr);
+        ringbuffer_deleter& destroy(DestroyFn destroyFn);
         void operator()(void* item) const;
 
     private:
         void* handle_;
-        Function function_;
+        ReturnFn returnFn_;
+        DestroyFn destroyFn_{};
     };
 }
 
-class RingbufferBase
-{
-public:
-    RingbufferBase(const RingbufferBase&) = delete;
+template<typename T>
+class Ringbuffer;
 
-protected:
+template<>
+class Ringbuffer<void>
+{
     using Pointer = std::unique_ptr<void, detail::ringbuffer_deleter>;
 
-    RingbufferBase(size_t capacity, size_t itemSize) noexcept;
-    ~RingbufferBase();
+public:
+    Ringbuffer(size_t capacity, size_t itemSize);
+    ~Ringbuffer();
+    Ringbuffer(Ringbuffer const&) = delete;
 
-    [[nodiscard]] Pointer acquire(uint32_t timeout) const;
-    [[nodiscard]] Pointer receive(uint32_t timeout) const;
+    [[nodiscard]] Pointer acquire(Duration timeout = Duration::max()) const;
+    [[nodiscard]] Pointer receive(Duration timeout = Duration::max()) const;
 
 private:
     size_t itemSize_;
@@ -37,36 +43,37 @@ private:
 };
 
 template<typename T>
-class Ringbuffer : public RingbufferBase
+class Ringbuffer : public Ringbuffer<void>
 {
-public:
+    using Base = Ringbuffer<void>;
     using Pointer = std::unique_ptr<T, detail::ringbuffer_deleter>;
 
+public:
     explicit Ringbuffer(size_t const capacity) noexcept
-        : RingbufferBase{capacity, sizeof(T)}
+        : Base{capacity, sizeof(T)}
     {
     }
 
     template<typename... Args>
-    bool emplace(uint32_t const timeout, Args&&... args) const
+    Pointer acquire(Duration const timeout, Args&&... args) const
     {
-        if (auto const itemPtr = acquire(timeout)) {
-            new(&*itemPtr) T{std::forward<Args>(args)...};
-            return true;
+        if (auto itemPtr = Base::acquire(timeout)) {
+            return {new(static_cast<T*>(itemPtr.release())) T{std::forward<Args>(args)...}, itemPtr.get_deleter()};
         }
-        return false;
+        return nullptr;
     }
 
-    [[nodiscard]] Pointer acquire(uint32_t const timeout) const
+    template<typename... Args>
+    Pointer acquire(Args&&... args) const
     {
-        auto itemPtr = RingbufferBase::acquire(timeout);
-        return {static_cast<T*>(itemPtr.release()), itemPtr.get_deleter()};
+        return acquire(Duration::max(), std::forward<Args>(args)...);
     }
 
-    [[nodiscard]] Pointer receive(uint32_t const timeout) const
+    [[nodiscard]] Pointer receive(Duration const timeout = Duration::max()) const
     {
-        auto itemPtr = RingbufferBase::receive(timeout);
-        return {static_cast<T*>(itemPtr.release()), itemPtr.get_deleter()};
+        auto itemPtr = Base::receive(timeout);
+        auto destroyFn = [](auto item) { std::destroy_at(static_cast<T*>(item)); };
+        return {static_cast<T*>(itemPtr.release()), itemPtr.get_deleter().destroy(destroyFn)};
     }
 };
 
