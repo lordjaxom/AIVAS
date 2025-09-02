@@ -10,6 +10,7 @@ idf_component_register(
             SoftTimer.cpp
             Task.cpp
             Time.cpp
+        WebSocket.cpp
             WiFi.cpp
         AIVAS.cpp
         INCLUDE_DIRS .
@@ -20,4 +21,5 @@ idf_component_register(
             esp-sr
             esp-boost
             mqtt
+            esp_websocket_client
 )

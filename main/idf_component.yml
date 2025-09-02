@@ -6,3 +6,4 @@ dependencies:
   espressif/esp-box-3: '*'
   espressif/esp-sr: '*'
   espressif/esp-boost: '*'
+  espressif/esp_websocket_client: '*'

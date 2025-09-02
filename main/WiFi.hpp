@@ -23,21 +23,24 @@ public:
     [[nodiscard]] char const* ssid() const { return ssid_; }
     [[nodiscard]] char const* password() const { return password_; }
 
+    [[nodiscard]] bool connected() const { return connected_; }
+
     Event<void()> connectEvent;
     Event<void()> disconnectEvent;
 
 private:
-    void connect(bool reconnecting) const;
+    void connectToWiFi(bool reconnecting) const;
     void logConnect() const;
 
-    void connected();
-    void disconnected();
+    void wiFiConnected();
+    void wiFiDisconnected();
 
     char const* ssid_;
     char const* password_;
     std::string const hostname_; // must stay constant
     SoftTimer reconnectTimer_;
     esp_netif_t* handle_{};
+    bool connected_{};
 };
 
 inline auto wiFi(char const* ssid, char const* password)

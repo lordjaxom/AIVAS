@@ -55,8 +55,9 @@ MqttClient::MqttClient(Context& context, WiFi& wiFi, char const* host, uint16_t 
     handle_ = esp_mqtt_client_init(&config);
     configASSERT(handle_);
 
-    // onConnect/onDisconnect/onMessage → ein gemeinsamer Handler
     ESP_ERROR_CHECK(esp_mqtt_client_register_event(handle_, MQTT_EVENT_ANY, &Helpers::mqttClientAnyEvent, this));
+
+    if (wiFi.connected()) connectToMqtt();
 }
 
 MqttClient::~MqttClient()

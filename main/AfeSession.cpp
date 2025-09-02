@@ -49,11 +49,6 @@ AfeSession::~AfeSession()
     interface_->destroy(instance_);
 }
 
-afe_fetch_result_t* AfeSession::fetch() const
-{
-    return interface_->fetch(instance_);
-}
-
 void AfeSession::feedTask()
 {
     auto const bytes = buffer_.size() * sizeof(buffer_[0]);

@@ -24,15 +24,15 @@ struct WiFi::Helpers
 {
     static void ipStaGotIpEvent(void* arg, esp_event_base_t, int32_t const, void*)
     {
-        static_cast<WiFi*>(arg)->connected();
+        static_cast<WiFi*>(arg)->wiFiConnected();
     }
 
     static void wiFiAnyEvent(void* arg, esp_event_base_t, int32_t const event_id, void*)
     {
         if (event_id == WIFI_EVENT_STA_START) {
-            static_cast<WiFi*>(arg)->connect(false);
+            static_cast<WiFi*>(arg)->connectToWiFi(false);
         } else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
-            static_cast<WiFi*>(arg)->disconnected();
+            static_cast<WiFi*>(arg)->wiFiDisconnected();
         }
     }
 };
@@ -41,7 +41,7 @@ WiFi::WiFi(Context& context, char const* ssid, char const* password)
     : ssid_{ssid},
       password_{password},
       hostname_{toHostname(context.clientId())},
-      reconnectTimer_{context, "wiFiReconnect", [this] { connect(true); }}
+      reconnectTimer_{context, "wiFiReconnect", [this] { connectToWiFi(true); }}
 {
     logConnect();
 
@@ -83,7 +83,7 @@ WiFi::WiFi(Context& context, char const* ssid, char const* password)
     ESP_ERROR_CHECK(esp_wifi_start());
 }
 
-void WiFi::connect(bool const reconnecting) const
+void WiFi::connectToWiFi(bool const reconnecting) const
 {
     if (reconnecting) logConnect();
     ESP_ERROR_CHECK(esp_wifi_connect());
@@ -94,22 +94,22 @@ void WiFi::logConnect() const
     ESP_LOGI(TAG, "connecting to WiFi at %s as %s", ssid_, hostname_.c_str());
 }
 
-void WiFi::connected()
+void WiFi::wiFiConnected()
 {
     esp_netif_ip_info_t ipInfo;
     ESP_ERROR_CHECK(esp_netif_get_ip_info(handle_, &ipInfo));
     ESP_LOGI(TAG, "connection to WiFi established as " IPSTR, IP2STR(&ipInfo.ip));
 
+    connected_ = true;
     reconnectTimer_.stop();
-
     connectEvent();
 }
 
-void WiFi::disconnected()
+void WiFi::wiFiDisconnected()
 {
     ESP_LOGE(TAG, "connection to WiFi lost");
 
+    connected_ = false;
     reconnectTimer_.start(reconnectDelay);
-
     disconnectEvent();
 }

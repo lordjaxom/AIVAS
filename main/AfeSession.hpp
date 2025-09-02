@@ -20,8 +20,6 @@ public:
     AfeSession(AfeSession const&) = delete;
     ~AfeSession();
 
-    [[nodiscard]] afe_fetch_result_t* fetch() const;
-
 private:
     void feedTask();
     void detectTask();
