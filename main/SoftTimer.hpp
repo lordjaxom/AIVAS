@@ -3,6 +3,11 @@
 
 #include <functional>
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/timers.h>
+
+#include "Time.hpp"
+
 class Context;
 
 class SoftTimer
@@ -16,7 +21,7 @@ public:
 
     [[nodiscard]] bool active() const;
 
-    void start(uint32_t timeout, bool repeat = false) const;
+    void start(Duration timeout, bool repeat = false) const;
     void stop() const;
 
 private:
@@ -25,7 +30,7 @@ private:
     Context& context_;
     char const* name_;
     std::function<void()> handler_;
-    void* handle_;
+    TimerHandle_t handle_;
 };
 
 #endif

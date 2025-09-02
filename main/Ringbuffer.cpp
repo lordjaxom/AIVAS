@@ -1,12 +1,11 @@
-#include <freertos/FreeRTOS.h>
 #include <freertos/ringbuf.h>
 
 #include "Application.hpp"
 #include "Ringbuffer.hpp"
 
 detail::ringbuffer_deleter::ringbuffer_deleter(void* handle, ReturnFn const returnFn)
-    : handle_(handle),
-      returnFn_(returnFn)
+    : handle_{handle},
+      returnFn_{returnFn}
 {
 }
 detail::ringbuffer_deleter& detail::ringbuffer_deleter::destroy(DestroyFn const destroyFn)

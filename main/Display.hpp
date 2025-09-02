@@ -4,6 +4,8 @@
 #include <optional>
 #include <string>
 
+#include <misc/lv_types.h>
+
 #include "Component.hpp"
 #include "Ringbuffer.hpp"
 #include "Task.hpp"
@@ -11,12 +13,11 @@
 
 class Display : public Component<Scope::singleton>
 {
-    static constexpr auto refreshDelay = Duration::millis(1000 / 25); // 25 Hz
+    static constexpr auto refreshDelay{Duration::millis(1000 / 25)}; // 25 Hz
 
 public:
     Display();
     Display(Display const&) = delete;
-    ~Display();
 
     void postText(std::string text) const;
 
@@ -35,7 +36,7 @@ private:
     Ringbuffer<std::string> queue_;
     uint32_t lastRefresh_;
     std::optional<Task> task_;
-    void* label_{};
+    lv_obj_t* label_{};
 };
 
 inline auto display()

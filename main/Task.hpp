@@ -3,6 +3,9 @@
 
 #include <functional>
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+
 class Task
 {
     using Runnable = std::function<void()>;
@@ -18,7 +21,7 @@ private:
 
     char const* name_;
     Runnable runnable_;
-    void* handle_{};
+    TaskHandle_t handle_{};
     bool volatile running_{true};
 };
 

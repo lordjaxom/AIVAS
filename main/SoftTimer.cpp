@@ -3,8 +3,6 @@
 #include "Application.hpp"
 #include "SoftTimer.hpp"
 
-#include <freertos/FreeRTOS.h>
-#include <freertos/timers.h>
 #include <portmacro.h>
 
 SoftTimer::SoftTimer(Context& context, char const* name, Handler handler)
@@ -13,7 +11,7 @@ SoftTimer::SoftTimer(Context& context, char const* name, Handler handler)
       handler_{std::move(handler)},
       handle_{
           xTimerCreate(
-              name_, pdMS_TO_TICKS(10), false, this,
+              name_, 1, false, this,
               [](auto timer) { static_cast<SoftTimer*>(pvTimerGetTimerID(timer))->timedOut(); }
           )
       }
@@ -24,26 +22,26 @@ SoftTimer::SoftTimer(Context& context, char const* name, Handler handler)
 SoftTimer::~SoftTimer()
 {
     stop();
-    xTimerDelete(static_cast<TimerHandle_t>(handle_), portMAX_DELAY);
+    xTimerDelete(handle_, portMAX_DELAY);
 }
 
 bool SoftTimer::active() const
 {
-    return xTimerIsTimerActive(static_cast<TimerHandle_t>(handle_));
+    return xTimerIsTimerActive(handle_);
 }
 
-void SoftTimer::start(uint32_t const timeout, bool const repeat) const
+void SoftTimer::start(Duration const timeout, bool const repeat) const
 {
     auto const handle = static_cast<TimerHandle_t>(handle_);
     vTimerSetReloadMode(handle, repeat);
-    xTimerChangePeriod(handle, pdMS_TO_TICKS(timeout), portMAX_DELAY);
+    xTimerChangePeriod(handle, timeout.ticks(), portMAX_DELAY);
     xTimerStart(handle, portMAX_DELAY);
 }
 
 void SoftTimer::stop() const
 {
     if (active()) {
-        xTimerStop(static_cast<TimerHandle_t>(handle_), portMAX_DELAY);
+        xTimerStop(handle_, portMAX_DELAY);
     }
 }
 

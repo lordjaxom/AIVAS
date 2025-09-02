@@ -1,7 +1,7 @@
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-
+#include "Logger.hpp"
 #include "Task.hpp"
+
+static constexpr Logger logger("Task");
 
 Task::Task(char const* name, unsigned const priority, int const core, Runnable runnable)
     : name_{name},
@@ -9,7 +9,7 @@ Task::Task(char const* name, unsigned const priority, int const core, Runnable r
 {
     xTaskCreatePinnedToCore(
         [](auto param) { static_cast<Task*>(param)->run(); },
-        name_, 4096, this, priority, reinterpret_cast<TaskHandle_t*>(&handle_), core
+        name_, 4096, this, priority, &handle_, core
     );
     configASSERT(handle_ != nullptr);
 }
@@ -22,13 +22,15 @@ Task::Task(char const* name, Runnable runnable)
 Task::~Task()
 {
     running_ = false;
-    while (eTaskGetState(static_cast<TaskHandle_t>(handle_)) != eDeleted) {
+    while (eTaskGetState(handle_) != eDeleted) {
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
 void Task::run() const
 {
+    logger.info("background task ", name_, " started");
+
     while (running_) {
         runnable_();
     }

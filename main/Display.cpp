@@ -8,14 +8,12 @@ Display::Display()
     : queue_{8},
       lastRefresh_{xTaskGetTickCount()}
 {
-    ESP_LOGI(TAG, "initializing display");
-
     ESP_ERROR_CHECK(bsp_display_start() ? ESP_OK : ESP_FAIL);
     ESP_ERROR_CHECK(bsp_display_brightness_set(100));
 
     ESP_ERROR_CHECK(bsp_display_lock(0) ? ESP_OK : ESP_FAIL);
 
-    lv_obj_t* screen = lv_screen_active();
+    auto const screen = lv_screen_active();
     auto const label = lv_label_create(screen);
     lv_obj_set_size(label, LV_PCT(100), LV_PCT(20));
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
@@ -27,11 +25,8 @@ Display::Display()
     label_ = label;
 
     task_.emplace("ui", [this] { uiTask(); });
-}
 
-Display::~Display()
-{
-    task_.reset();
+    ESP_LOGI(TAG, "display successfully initialized");
 }
 
 void Display::postText(std::string text) const

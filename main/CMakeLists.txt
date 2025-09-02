@@ -1,8 +1,11 @@
 idf_component_register(
         SRCS
             AIVAS.cpp
+            AfeSession.cpp
             Context.cpp
             Display.cpp
+            Microphone.cpp
+            MqttClient.cpp
             Ringbuffer.cpp
             SoftTimer.cpp
             Task.cpp

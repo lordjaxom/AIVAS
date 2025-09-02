@@ -1,6 +1,8 @@
 #ifndef AIVAS_IOT_WIFI_HPP
 #define AIVAS_IOT_WIFI_HPP
 
+#include <esp_netif_types.h>
+
 #include "Component.hpp"
 #include "Event.hpp"
 #include "SoftTimer.hpp"
@@ -9,7 +11,7 @@ class Context;
 
 class WiFi : public Component<Scope::singleton, Context>
 {
-    static constexpr uint32_t reconnectDelay = 5000;
+    static constexpr Duration reconnectDelay{Duration::millis(5000)};
 
     struct Helpers;
     friend Helpers;
@@ -35,7 +37,7 @@ private:
     char const* password_;
     std::string const hostname_; // must stay constant
     SoftTimer reconnectTimer_;
-    void* handle_{};
+    esp_netif_t* handle_{};
 };
 
 inline auto wiFi(char const* ssid, char const* password)

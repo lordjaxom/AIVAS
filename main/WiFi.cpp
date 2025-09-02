@@ -57,7 +57,7 @@ WiFi::WiFi(Context& context, char const* ssid, char const* password)
     handle_ = esp_netif_create_default_wifi_sta();
     configASSERT(handle_ != nullptr);
 
-    ESP_ERROR_CHECK(esp_netif_set_hostname(static_cast<esp_netif_t*>(handle_), hostname_.c_str()));
+    ESP_ERROR_CHECK(esp_netif_set_hostname(handle_, hostname_.c_str()));
 
     wifi_init_config_t const initConfig = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&initConfig));
@@ -82,11 +82,10 @@ WiFi::WiFi(Context& context, char const* ssid, char const* password)
 
     ESP_ERROR_CHECK(esp_wifi_start());
 }
+
 void WiFi::connect(bool const reconnecting) const
 {
-    if (reconnecting) {
-        logConnect();
-    }
+    if (reconnecting) logConnect();
     ESP_ERROR_CHECK(esp_wifi_connect());
 }
 
@@ -98,7 +97,7 @@ void WiFi::logConnect() const
 void WiFi::connected()
 {
     esp_netif_ip_info_t ipInfo;
-    ESP_ERROR_CHECK(esp_netif_get_ip_info(static_cast<esp_netif_t*>(handle_), &ipInfo));
+    ESP_ERROR_CHECK(esp_netif_get_ip_info(handle_, &ipInfo));
     ESP_LOGI(TAG, "connection to WiFi established as " IPSTR, IP2STR(&ipInfo.ip));
 
     reconnectTimer_.stop();
