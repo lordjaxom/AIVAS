@@ -9,7 +9,7 @@ class Task
 
 public:
     Task(char const* name, unsigned priority, int core, Runnable runnable);
-    Task(char const* name, Runnable function);
+    Task(char const* name, Runnable runnable);
     Task(Task const&) = delete;
     ~Task();
 

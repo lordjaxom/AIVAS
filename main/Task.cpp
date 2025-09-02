@@ -23,7 +23,7 @@ Task::~Task()
 {
     running_ = false;
     while (eTaskGetState(static_cast<TaskHandle_t>(handle_)) != eDeleted) {
-        vTaskDelay(pdMS_TO_TICKS(1));
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
