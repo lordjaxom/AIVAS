@@ -6,6 +6,7 @@
 #include "Component.hpp"
 #include "Event.hpp"
 #include "SoftTimer.hpp"
+#include "String.hpp"
 
 class Context;
 
@@ -37,7 +38,7 @@ private:
 
     char const* ssid_;
     char const* password_;
-    std::string const hostname_; // must stay constant
+    String const hostname_; // must stay constant
     SoftTimer reconnectTimer_;
     esp_netif_t* handle_{};
     bool connected_{};

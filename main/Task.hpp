@@ -6,8 +6,14 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+#include "Time.hpp"
+
 class Task
 {
+    static constexpr std::size_t stackSize = 4096;
+    static constexpr auto shutdownTimeout = Duration::millis(2000);
+    static constexpr auto shutdownPollInterval = Duration::millis(10);
+
     using Runnable = std::function<void()>;
 
 public:
@@ -22,7 +28,6 @@ private:
     char const* name_;
     Runnable runnable_;
     TaskHandle_t handle_{};
-    bool volatile running_{true};
 };
 
 #endif

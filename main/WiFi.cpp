@@ -11,7 +11,7 @@
 
 static constexpr auto TAG = "WiFI";
 
-static std::string toHostname(std::string clientId)
+static String toHostname(String clientId)
 {
     std::ranges::transform(
         std::as_const(clientId), clientId.begin(),

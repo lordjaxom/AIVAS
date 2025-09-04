@@ -7,3 +7,4 @@ dependencies:
   espressif/esp-sr: '*'
   espressif/esp-boost: '*'
   espressif/esp_websocket_client: '*'
+  johboh/nlohmann-json: '*'

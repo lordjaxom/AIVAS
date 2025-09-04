@@ -1,25 +1,43 @@
 idf_component_register(
-        SRCS
-            AIVAS.cpp
-            AfeSession.cpp
-            Context.cpp
-            Display.cpp
-            Microphone.cpp
-            MqttClient.cpp
-            Ringbuffer.cpp
-            SoftTimer.cpp
-            Task.cpp
-            Time.cpp
-        WebSocket.cpp
-            WiFi.cpp
+    SRCS
         AIVAS.cpp
-        INCLUDE_DIRS .
-        REQUIRES
-            esp_wifi
-            nvs_flash
-            esp-box-3
-            esp-sr
-            esp-boost
-            mqtt
-            esp_websocket_client
+        AfeSession.cpp
+        AfeSession.hpp
+        Application.hpp
+        Arduino.hpp
+        AudioBuffer.hpp
+        Component.hpp
+        Context.cpp
+        Context.hpp
+        Display.cpp
+        Display.hpp
+        Event.hpp
+        Memory.hpp
+        Microphone.cpp
+        Microphone.hpp
+        MqttClient.cpp
+        MqttClient.hpp
+        Ringbuffer.cpp
+        Ringbuffer.hpp
+        SoftTimer.cpp
+        SoftTimer.hpp
+        String.hpp
+        Task.cpp
+        Task.hpp
+        WebSocket.cpp
+        WebSocket.hpp
+        WiFi.cpp
+        WiFi.hpp
+        WsStreamer.cpp
+        WsStreamer.hpp
+    INCLUDE_DIRS .
+    REQUIRES
+        esp_wifi
+        nvs_flash
+        esp-box-3
+        esp-sr
+        esp-boost
+        mqtt
+        esp_websocket_client
+        nlohmann-json
 )

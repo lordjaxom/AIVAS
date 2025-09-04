@@ -34,16 +34,20 @@ public:
     ~Ringbuffer();
     Ringbuffer(Ringbuffer const&) = delete;
 
+    [[nodiscard]] std::size_t capacity() const { return capacity_; }
+    [[nodiscard]] std::size_t itemSize() const { return itemSize_; }
+
     [[nodiscard]] Pointer acquire(Duration timeout = Duration::max()) const;
     [[nodiscard]] Pointer receive(Duration timeout = Duration::max()) const;
 
 private:
-    size_t itemSize_;
+    std::size_t capacity_;
+    std::size_t itemSize_;
     void* handle_{};
 };
 
 template<typename T>
-class Ringbuffer : public Ringbuffer<void>
+class Ringbuffer : Ringbuffer<void>
 {
     using Base = Ringbuffer<void>;
     using Pointer = std::unique_ptr<T, detail::ringbuffer_deleter>;
@@ -58,7 +62,8 @@ public:
     Pointer acquire(Duration const timeout, Args&&... args) const
     {
         if (auto itemPtr = Base::acquire(timeout)) {
-            return {new(static_cast<T*>(itemPtr.release())) T{std::forward<Args>(args)...}, itemPtr.get_deleter()};
+            new(static_cast<T*>(itemPtr.get())) T{std::forward<Args>(args)...};
+            return {static_cast<T*>(itemPtr.release()), itemPtr.get_deleter()};
         }
         return nullptr;
     }

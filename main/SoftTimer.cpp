@@ -3,8 +3,6 @@
 #include "Application.hpp"
 #include "SoftTimer.hpp"
 
-#include <portmacro.h>
-
 SoftTimer::SoftTimer(Context& context, char const* name, Handler handler)
     : context_{context},
       name_{name},

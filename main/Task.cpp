@@ -1,17 +1,19 @@
-#include "Logger.hpp"
+#include <esp_log.h>
+
 #include "Task.hpp"
 
-static constexpr Logger logger("Task");
+static constexpr auto TAG{"Task"};
 
 Task::Task(char const* name, unsigned const priority, int const core, Runnable runnable)
     : name_{name},
       runnable_{std::move(runnable)}
 {
-    xTaskCreatePinnedToCore(
+    auto res = xTaskCreatePinnedToCore(
         [](auto param) { static_cast<Task*>(param)->run(); },
         name_, 4096, this, priority, &handle_, core
     );
-    configASSERT(handle_ != nullptr);
+    ESP_LOGI(TAG, "background task %s started with result %d", name_, res);
+    configASSERT(res == pdPASS && handle_ != nullptr);
 }
 
 Task::Task(char const* name, Runnable runnable)
@@ -21,18 +23,19 @@ Task::Task(char const* name, Runnable runnable)
 
 Task::~Task()
 {
-    running_ = false;
-    while (eTaskGetState(handle_) != eDeleted) {
-        vTaskDelay(pdMS_TO_TICKS(10));
+    for (std::size_t waited = 0; waited < shutdownTimeout.millis(); waited += shutdownPollInterval.millis()) {
+        if (eTaskGetState(handle_) == eDeleted) return;
+        vTaskDelay(shutdownPollInterval.ticks());
     }
+
+    ESP_LOGE(TAG, "background task %s did not exit, killing...", name_);
+    vTaskDelete(handle_);
 }
 
 void Task::run() const
 {
-    logger.info("background task ", name_, " started");
-
-    while (running_) {
-        runnable_();
-    }
+    ESP_LOGI(TAG, "background task %s started", name_);
+    runnable_();
+    ESP_LOGI(TAG, "background task %s exited", name_);
     vTaskDelete(nullptr);
 }

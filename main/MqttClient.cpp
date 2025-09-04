@@ -1,12 +1,12 @@
 #include <algorithm>
 
-#include "Logger.hpp"
+#include <esp_log.h>
+
 #include "MqttClient.hpp"
-#include "String.hpp"
 
-static constexpr Logger logger{"MqttClient"};
+static constexpr auto TAG{"MqttClient"};
 
-static std::string toTopic(std::string clientId)
+static String toTopic(String clientId)
 {
     std::ranges::replace(clientId, '-', '/');
     return clientId;
@@ -66,13 +66,13 @@ MqttClient::~MqttClient()
     esp_mqtt_client_destroy(handle_);
 }
 
-void MqttClient::publish(std::string const& topic, std::string_view const payload, bool const retain) const
+void MqttClient::publish(String const& topic, std::string_view const payload, bool const retain) const
 {
     if (!connected_) return;
     esp_mqtt_client_publish(handle_, topic.c_str(), payload.data(), payload.size(), 1, retain);
 }
 
-void MqttClient::subscribe(std::string topic, Subscriber handler)
+void MqttClient::subscribe(String topic, Subscriber handler)
 {
     if (auto const it = subscriptions_.emplace(std::move(topic), std::move(handler));
         connected_ && subscriptions_.count(it->first) == 1) {
@@ -80,9 +80,9 @@ void MqttClient::subscribe(std::string topic, Subscriber handler)
     }
 }
 
-void MqttClient::connectToMqtt()
+void MqttClient::connectToMqtt() const
 {
-    logger.info("connecting to MQTT broker at ", uri_, " as ", clientId_);
+    ESP_LOGI(TAG, "connexting to MQTT broker at %s as %s", uri_.c_str(), clientId_);
     ESP_ERROR_CHECK(esp_mqtt_client_start(handle_));
 }
 
@@ -93,7 +93,7 @@ void MqttClient::wiFiDisconnected() const
 
 void MqttClient::mqttConnected()
 {
-    logger.info("connection to MQTT broker established");
+    ESP_LOGI(TAG, "connection to MQTT broker established");
 
     connected_ = true;
     publish(willTopic_, "Online", true);
@@ -104,22 +104,22 @@ void MqttClient::mqttConnected()
 
 void MqttClient::mqttDisconnected()
 {
-    logger.info("connection to MQTT broker lost");
+    ESP_LOGI(TAG, "connection to MQTT broker lost");
     connected_ = false;
 }
 
 void MqttClient::mqttMessage(char const* topic, char const* payload, size_t const length)
 {
-    std::string message{payload, length};
+    String message{payload, length};
 
-    logger.info("received ", message, " from ", topic);
+    ESP_LOGI(TAG, "received '%s' at topic %s", message.c_str(), topic);
 
     auto [begin, end] = subscriptions_.equal_range(topic);
     std::for_each(begin, end, [&](auto const& pair) { pair.second(message); });
 }
 
-void MqttClient::mqttSubscribe(std::string const& topic) const
+void MqttClient::mqttSubscribe(String const& topic) const
 {
-    logger.info("subscribing to ", topic);
+    ESP_LOGI(TAG, "subscribing to topic %s", topic.c_str());
     esp_mqtt_client_subscribe(handle_, topic.c_str(), 1);
 }

@@ -1,8 +1,9 @@
-#include "Logger.hpp"
 #include "String.hpp"
 #include "WebSocket.hpp"
 
-static constexpr Logger logger{"WebSocket"};
+#include "esp_log.h"
+
+static constexpr auto TAG{"WebSocket"};
 
 struct WebSocket::Helpers
 {
@@ -46,27 +47,32 @@ WebSocket::~WebSocket()
     esp_websocket_client_destroy(handle_);
 }
 
-void WebSocket::sendBinary(char const* payload, size_t const length, Duration const timeout) const
+void WebSocket::sendBinary(std::span<uint8_t const> const payload, Duration const timeout) const
 {
     if (!connected_) return;
-    esp_websocket_client_send_bin(handle_, payload, length, timeout.ticks());
+    esp_websocket_client_send_bin(
+        handle_,
+        reinterpret_cast<char const*>(payload.data()),
+        static_cast<int>(payload.size()),
+        timeout.ticks()
+    );
 }
 
 void WebSocket::sendText(std::string_view const payload, Duration const timeout) const
 {
     if (!connected_) return;
-    esp_websocket_client_send_text(handle_, payload.data(), payload.size(), timeout.ticks());
+    esp_websocket_client_send_text(handle_, payload.data(), static_cast<int>(payload.size()), timeout.ticks());
 }
 
 void WebSocket::connectToWs() const
 {
-    logger.info("connecting to WebSocket at ", uri_);
+    ESP_LOGI(TAG, "connecting to WebSocket at %s", uri_.c_str());
     ESP_ERROR_CHECK(esp_websocket_client_start(handle_));
 }
 
 void WebSocket::wsConnected()
 {
-    logger.info("connection to WebSocket established");
+    ESP_LOGI(TAG, "connection to WebSocket established");
 
     connected_ = true;
     connectEvent();
@@ -74,7 +80,7 @@ void WebSocket::wsConnected()
 
 void WebSocket::wsDisconnected()
 {
-    logger.info("connection to WebSocket lost");
+    ESP_LOGI(TAG, "connection to WebSocket lost");
 
     connected_ = false;
     disconnectEvent();

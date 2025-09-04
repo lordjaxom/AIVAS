@@ -1,21 +1,29 @@
 #ifndef AIVAS_IOT_TIME_HPP
 #define AIVAS_IOT_TIME_HPP
 
+#include <freertos/FreeRTOS.h>
+
 #include <cstdint>
 
 class Duration
 {
 public:
-    static constexpr Duration millis(uint32_t const millis) { return Duration{millis}; }
-    static constexpr Duration none() { return Duration{0}; }
-    static constexpr Duration max() { return Duration{UINT32_MAX}; }
-    static Duration ticks(uint32_t ticks);
+    static constexpr Duration ticks(uint32_t const ticks) { return pdTICKS_TO_MS(ticks); }
+    static constexpr Duration millis(uint32_t const millis) { return millis; }
+    static constexpr Duration none() { return 0; }
+    static constexpr Duration max() { return UINT32_MAX; }
 
     [[nodiscard]] constexpr uint32_t millis() const { return millis_; }
-    [[nodiscard]] uint32_t ticks() const;
+
+    [[nodiscard]] uint32_t ticks() const
+    {
+        if (millis_ == 0) return 0;
+        if (millis_ == UINT32_MAX) return portMAX_DELAY;
+        return std::max(pdMS_TO_TICKS(millis_), 1ul); // at least 1
+    }
 
 private:
-    constexpr explicit Duration(uint32_t const millis) : millis_{millis} {}
+    constexpr Duration(uint32_t const millis) : millis_{millis} {} // NOLINT(*-explicit-constructor)
 
     uint32_t millis_;
 };

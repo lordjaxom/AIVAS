@@ -1,10 +1,10 @@
 #include <bsp/esp-box-3.h>
 #include <esp_codec_dev.h>
+#include <esp_log.h>
 
 #include "Microphone.hpp"
-#include "Logger.hpp"
 
-static constexpr Logger logger{"Microphone"};
+static constexpr auto TAG{"Microphone"};
 
 Microphone::Microphone()
     : handle_{bsp_audio_codec_microphone_init()}
@@ -23,7 +23,7 @@ Microphone::Microphone()
     ESP_ERROR_CHECK(esp_codec_dev_set_in_mute(handle_, false));
     ESP_ERROR_CHECK(esp_codec_dev_set_in_gain(handle_, 30.0f));
 
-    logger.info("microphone successfully initialized");
+    ESP_LOGI(TAG, "microphone successfully initialized");
 }
 
 Microphone::~Microphone()

@@ -23,7 +23,8 @@ void detail::ringbuffer_deleter::operator()(void* item) const
 }
 
 Ringbuffer<void>::Ringbuffer(size_t const capacity, size_t const itemSize)
-    : itemSize_{itemSize},
+    : capacity_{capacity},
+      itemSize_{itemSize},
       handle_{xRingbufferCreateNoSplit(itemSize_, capacity)}
 {
     configASSERT(handle_ != nullptr);

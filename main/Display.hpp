@@ -2,12 +2,12 @@
 #define AIVAS_IOT_DISPLAY_HPP
 
 #include <optional>
-#include <string>
 
 #include <misc/lv_types.h>
 
 #include "Component.hpp"
 #include "Ringbuffer.hpp"
+#include "String.hpp"
 #include "Task.hpp"
 #include "Time.hpp"
 
@@ -18,8 +18,9 @@ class Display : public Component<Scope::singleton>
 public:
     Display();
     Display(Display const&) = delete;
+    ~Display();
 
-    void postText(std::string text) const;
+    void postText(String text) const;
 
     // // Helligkeit 0..100
     // void setBrightness(uint8_t percent);
@@ -29,14 +30,14 @@ public:
     // void screenOn();
 
 private:
-    void uiTask();
+    void displayTask() const;
 
     // void applyTextLocked(const char* txt); // nur im UI-Task aufrufen (LVGL locked)
 
-    Ringbuffer<std::string> queue_;
-    uint32_t lastRefresh_;
-    std::optional<Task> task_;
     lv_obj_t* label_{};
+    Ringbuffer<String> queue_;
+    std::optional<Task> task_;
+    bool volatile running_{true};
 };
 
 inline auto display()
