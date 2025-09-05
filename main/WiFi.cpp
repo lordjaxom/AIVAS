@@ -1,23 +1,30 @@
-#include <cstring>
-#include <algorithm>
+#include <ranges>
 
 #include <esp_log.h>
 #include <esp_wifi.h>
 #include <nvs_flash.h>
 
-#include "Context.hpp"
-#include "String.hpp"
+#include "Application.hpp"
 #include "WiFi.hpp"
 
 static constexpr auto TAG = "WiFI";
 
-static String toHostname(String clientId)
+static String toHostname(std::string_view clientId)
 {
+    String hostname{clientId};
     std::ranges::transform(
-        std::as_const(clientId), clientId.begin(),
+        std::as_const(hostname), hostname.begin(),
         [](auto c) { return std::tolower(c); }
     );
     return str("iot-", clientId);
+}
+
+template<std::size_t N>
+void copy(std::string_view const src, uint8_t (&dest)[N])
+{
+    assert(src.length() < N);
+    std::ranges::copy(src, reinterpret_cast<char*>(dest));
+    dest[src.length()] = 0;
 }
 
 struct WiFi::Helpers
@@ -37,11 +44,11 @@ struct WiFi::Helpers
     }
 };
 
-WiFi::WiFi(Context& context, char const* ssid, char const* password)
+WiFi::WiFi(std::string_view ssid, std::string_view password)
     : ssid_{ssid},
       password_{password},
-      hostname_{toHostname(context.clientId())},
-      reconnectTimer_{context, "wiFiReconnect", [this] { connectToWiFi(true); }}
+      hostname_{toHostname(Application::get().clientId())}
+      // reconnectTimer_{context, "wiFiReconnect", [this] { connectToWiFi(true); }}
 {
     logConnect();
 
@@ -71,8 +78,8 @@ WiFi::WiFi(Context& context, char const* ssid, char const* password)
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
 
     wifi_config_t config{};
-    std::strncpy(reinterpret_cast<char*>(config.sta.ssid), ssid_, sizeof(config.sta.ssid));
-    std::strncpy(reinterpret_cast<char*>(config.sta.password), password_, sizeof(config.sta.password));
+    copy(ssid_, config.sta.ssid);
+    copy(password_, config.sta.password);
     config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
     config.sta.sae_pwe_h2e = WPA3_SAE_PWE_BOTH;
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &config));
@@ -91,7 +98,7 @@ void WiFi::connectToWiFi(bool const reconnecting) const
 
 void WiFi::logConnect() const
 {
-    ESP_LOGI(TAG, "connecting to WiFi at %s as %s", ssid_, hostname_.c_str());
+    ESP_LOGI(TAG, "connecting to WiFi at %.*s as %s", ssid_.length(), ssid_.data(), hostname_.c_str());
 }
 
 void WiFi::wiFiConnected()
@@ -101,7 +108,7 @@ void WiFi::wiFiConnected()
     ESP_LOGI(TAG, "connection to WiFi established as " IPSTR, IP2STR(&ipInfo.ip));
 
     connected_ = true;
-    reconnectTimer_.stop();
+    // reconnectTimer_.stop();
     connectEvent();
 }
 
@@ -110,6 +117,6 @@ void WiFi::wiFiDisconnected()
     ESP_LOGE(TAG, "connection to WiFi lost");
 
     connected_ = false;
-    reconnectTimer_.start(reconnectDelay);
+    // reconnectTimer_.start(reconnectDelay);
     disconnectEvent();
 }

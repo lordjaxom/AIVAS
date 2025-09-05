@@ -12,7 +12,7 @@ using String = std::pmr::string;
 namespace detail {
     template<typename T>
     auto str_append(String& result, T arg) ->
-        std::enable_if_t<!std::is_convertible_v<T, std::string_view> >
+        std::enable_if_t<!std::is_convertible_v<T, std::string_view>>
     {
         using std::to_string;
         result += to_string(arg);

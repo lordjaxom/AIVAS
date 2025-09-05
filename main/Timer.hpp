@@ -1,23 +1,19 @@
 #ifndef ESPIDF_IOT_SOFTTIMER_HPP
 #define ESPIDF_IOT_SOFTTIMER_HPP
 
-#include <functional>
-
-#include <freertos/FreeRTOS.h>
 #include <freertos/timers.h>
 
+#include "Function.hpp"
 #include "Time.hpp"
 
-class Context;
-
-class SoftTimer
+class Timer
 {
-    using Handler = std::function<void()>;
+    using Handler = Function<void()>;
 
 public:
-    SoftTimer(Context& context, char const* name, Handler handler);
-    SoftTimer(SoftTimer const&) = delete;
-    ~SoftTimer();
+    Timer(char const* name, Handler handler);
+    Timer(Timer const&) = delete;
+    ~Timer();
 
     [[nodiscard]] bool active() const;
 
@@ -27,9 +23,8 @@ public:
 private:
     void timedOut() const;
 
-    Context& context_;
     char const* name_;
-    std::function<void()> handler_;
+    Handler handler_;
     TimerHandle_t handle_;
 };
 

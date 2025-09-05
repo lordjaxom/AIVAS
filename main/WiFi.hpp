@@ -1,16 +1,19 @@
 #ifndef AIVAS_IOT_WIFI_HPP
 #define AIVAS_IOT_WIFI_HPP
 
+#include <string_view>
+
 #include <esp_netif_types.h>
 
-#include "Component.hpp"
 #include "Event.hpp"
-#include "SoftTimer.hpp"
+#include "Singleton.hpp"
+// #include "SoftTimer.hpp"
 #include "String.hpp"
+#include "Time.hpp"
 
 class Context;
 
-class WiFi : public Component<Scope::singleton, Context>
+class WiFi : public Singleton<WiFi>
 {
     static constexpr Duration reconnectDelay{Duration::millis(5000)};
 
@@ -18,16 +21,15 @@ class WiFi : public Component<Scope::singleton, Context>
     friend Helpers;
 
 public:
-    WiFi(Context& context, char const* ssid, char const* password);
-    WiFi(WiFi const&) = delete;
+    WiFi(std::string_view ssid, std::string_view password);
 
-    [[nodiscard]] char const* ssid() const { return ssid_; }
-    [[nodiscard]] char const* password() const { return password_; }
+    [[nodiscard]] std::string_view ssid() const { return ssid_; }
+    [[nodiscard]] std::string_view password() const { return password_; }
 
     [[nodiscard]] bool connected() const { return connected_; }
 
-    Event<void()> connectEvent;
-    Event<void()> disconnectEvent;
+    SubscribeEvent<void()> connectEvent;
+    SubscribeEvent<void()> disconnectEvent;
 
 private:
     void connectToWiFi(bool reconnecting) const;
@@ -36,17 +38,12 @@ private:
     void wiFiConnected();
     void wiFiDisconnected();
 
-    char const* ssid_;
-    char const* password_;
-    String const hostname_; // must stay constant
-    SoftTimer reconnectTimer_;
+    std::string_view ssid_;
+    std::string_view password_;
+    String const hostname_;
+    // SoftTimer reconnectTimer_;
     esp_netif_t* handle_{};
     bool connected_{};
 };
-
-inline auto wiFi(char const* ssid, char const* password)
-{
-    return component<WiFi>(ssid, password);
-}
 
 #endif

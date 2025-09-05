@@ -6,7 +6,7 @@
 #include <misc/lv_types.h>
 
 #include "Component.hpp"
-#include "Ringbuffer.hpp"
+#include "Queue.hpp"
 #include "String.hpp"
 #include "Task.hpp"
 #include "Time.hpp"

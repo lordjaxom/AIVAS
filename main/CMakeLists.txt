@@ -1,35 +1,39 @@
 idf_component_register(
     SRCS
         AIVAS.cpp
-        AfeSession.cpp
-        AfeSession.hpp
+#        AfeSession.cpp
+#        AfeSession.hpp
+        Application.cpp
         Application.hpp
-        Arduino.hpp
-        AudioBuffer.hpp
-        Component.hpp
-        Context.cpp
-        Context.hpp
-        Display.cpp
-        Display.hpp
+#        Arduino.hpp
+#        AudioBuffer.hpp
+#        Context.cpp
+#        Context.hpp
+#        Display.cpp
+#        Display.hpp
         Event.hpp
+        Function.hpp
+        Memory.cpp
         Memory.hpp
-        Microphone.cpp
-        Microphone.hpp
-        MqttClient.cpp
-        MqttClient.hpp
-        Ringbuffer.cpp
-        Ringbuffer.hpp
-        SoftTimer.cpp
-        SoftTimer.hpp
+#        Microphone.cpp
+#        Microphone.hpp
+        Mqtt.cpp
+        Mqtt.hpp
+        Queue.cpp
+        Queue.hpp
+        Singleton.hpp
         String.hpp
-        Task.cpp
-        Task.hpp
-        WebSocket.cpp
-        WebSocket.hpp
+#        Task.cpp
+#        Task.hpp
+        Time.hpp
+        Timer.cpp
+        Timer.hpp
+#        WebSocket.cpp
+#        WebSocket.hpp
         WiFi.cpp
         WiFi.hpp
-        WsStreamer.cpp
-        WsStreamer.hpp
+#        WsStreamer.cpp
+#        WsStreamer.hpp
     INCLUDE_DIRS .
     REQUIRES
         esp_wifi

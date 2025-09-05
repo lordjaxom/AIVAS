@@ -1,40 +1,55 @@
 #ifndef ESPIDF_IOT_EVENT_HPP
 #define ESPIDF_IOT_EVENT_HPP
 
-#include <algorithm>
-#include <functional>
+#include "Function.hpp"
+
 #include <list>
 #include <memory>
 #include <utility>
+#include <vector>
+
+template<typename Signature>
+class OneShotEvent
+{
+    using Handler = Function<Signature>;
+
+public:
+    OneShotEvent() = default;
+    OneShotEvent(OneShotEvent const&) = delete;
+
+    void connect(Handler handler)
+    {
+        handlers_.push_back(std::move(handler));
+    }
+
+    template<typename... Args>
+    void operator()(Args&&... args)
+    {
+        for (auto handlers{std::move(handlers_)};
+             auto const& handler: handlers) {
+            handler(std::forward<Args>(args)...);
+        }
+    }
+
+private:
+    std::pmr::vector<Handler> handlers_;
+};
 
 using Subscription = std::unique_ptr<bool, void (*)(bool* deleted)>;
 
-template<typename Signature, bool oneShot = false>
-class Event
+template<typename Signature>
+class SubscribeEvent
 {
-    using Handler = std::function<Signature>;
+    using Handler = Function<Signature>;
 
 public:
-    Event() noexcept = default;
-    Event(Event const&) = delete;
+    SubscribeEvent() = default;
+    SubscribeEvent(SubscribeEvent const&) = delete;
 
-    Event& operator+=(Handler handler)
+    [[nodiscard]] Subscription connect(Handler handler)
     {
-        static_assert(oneShot, "Event::operator+= is not allowed for regular events");
-        handlers_.emplace_back(std::move(handler), false);
-        return *this;
-    }
-
-    Subscription subscribe(Handler handler)
-    {
-        static_assert(!oneShot, "Event::subscribe is not allowed for one-shot events");
         auto it = handlers_.emplace(handlers_.end(), std::move(handler), false);
         return {&it->second, [](auto deleted) { *deleted = true; }};
-    }
-
-    void clear()
-    {
-        handlers_.clear();
     }
 
     template<typename... T>
@@ -57,10 +72,7 @@ public:
     }
 
 private:
-    std::list<std::pair<Handler, bool> > handlers_;
+    std::pmr::list<std::pair<Handler, bool> > handlers_;
 };
-
-template<typename Signature>
-using OneShotEvent = Event<Signature, true>;
 
 #endif
