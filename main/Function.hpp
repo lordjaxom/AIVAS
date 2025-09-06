@@ -81,4 +81,20 @@ private:
     stub_fn_type stub_fn;
 };
 
+/**
+ * @brief Helpers to create a Function object from a member function pointer.
+ */
+
+template<typename T, typename Ret, typename... Args>
+auto fn(T& object, Ret (T::*member)(Args...)) noexcept
+{
+    return Function<Ret(Args...)>{object, member};
+}
+
+template<typename T, typename Ret, typename... Args>
+auto fn(T const& object, Ret (T::*member)(Args...) const) noexcept
+{
+    return Function<Ret(Args...)>{object, member};
+}
+
 #endif

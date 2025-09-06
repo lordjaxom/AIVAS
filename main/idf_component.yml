@@ -8,3 +8,4 @@ dependencies:
   espressif/esp-boost: '*'
   espressif/esp_websocket_client: '*'
   bblanchon/arduinojson: '*'
+  espressif/at581x: '*'

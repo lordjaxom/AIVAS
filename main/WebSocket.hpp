@@ -6,7 +6,7 @@
 
 #include <esp_websocket_client.h>
 
-#include "Event.hpp"
+#include "Function.hpp"
 #include "String.hpp"
 #include "Time.hpp"
 
@@ -15,17 +15,17 @@ class WebSocket
     struct Helpers;
     friend Helpers;
 
+    using Callback = Function<void()>;
+
 public:
-    WebSocket(char const* host, uint16_t port, char const* path);
+    WebSocket(std::string_view host, std::uint16_t port, std::string_view path,
+              Callback const& connectCallback = []{}, Callback const& disconnectCallback = []{});
     ~WebSocket();
 
     [[nodiscard]] bool connected() const { return connected_; }
 
     void sendBinary(std::span<uint8_t const> payload, Duration timeout = Duration::max()) const;
     void sendText(std::string_view payload, Duration timeout = Duration::max()) const;
-
-    Event<void()> connectEvent;
-    Event<void()> disconnectEvent;
 
 private:
     void connectToWs() const;
@@ -36,6 +36,8 @@ private:
     String const uri_; // must stay constant
     esp_websocket_client_handle_t handle_{};
     bool connected_{};
+    Function<void()> connectCallback_;
+    Function<void()> disconnectCallback_;
 };
 
 #endif

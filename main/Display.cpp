@@ -2,18 +2,23 @@
 
 #include "Display.hpp"
 
+#include <functional>
+#include <memory>
+
+#include "Memory.hpp"
+
 static constexpr auto TAG = "Display";
 
 Display::Display()
-    // : queue_{8}
+// : queue_{8}
 {
-    bsp_display_cfg_t config{
+    constexpr bsp_display_cfg_t config{
         .lvgl_port_cfg = ESP_LVGL_PORT_INIT_CONFIG(),
         .buffer_size = BSP_LCD_H_RES * CONFIG_BSP_LCD_DRAW_BUF_HEIGHT,
         .double_buffer = false,
         .flags = {
-            .buff_dma = 1,
-            .buff_spiram = 0
+            .buff_dma = false,
+            .buff_spiram = true
         }
     };
     ESP_ERROR_CHECK(bsp_display_start_with_config(&config) ? ESP_OK : ESP_FAIL);
@@ -25,41 +30,24 @@ Display::Display()
     label_ = lv_label_create(screen);
     lv_obj_set_size(label_, LV_PCT(100), LV_PCT(20));
     lv_label_set_long_mode(label_, LV_LABEL_LONG_WRAP);
-    lv_label_set_text(label_, "Hello, I am AIVAS");
+    lv_label_set_text(label_, "");
     lv_obj_set_style_text_align(label_, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_style_text_font(label_, LV_FONT_DEFAULT, 0);
     lv_obj_center(label_);
     bsp_display_unlock();
 
-    task_.emplace("display", Function<void()>{*this, &Display::displayTask}, StackDepth{2048});
-
     ESP_LOGI(TAG, "display successfully initialized");
 }
 
-Display::~Display()
+// ReSharper disable once CppMemberFunctionMayBeStatic
+void Display::brightness(int const level) // NOLINT(*-convert-member-functions-to-static)
 {
-    running_ = false;
+    ESP_ERROR_CHECK(bsp_display_brightness_set(level));
 }
-//
-// void Display::postText(String text) const
-// {
-//     queue_.acquire(std::move(text));
-// }
 
-void Display::displayTask() const
+void Display::showText(String const& text) const
 {
-    auto lastRefresh = xTaskGetTickCount();
-    while (running_) {
-        if (bsp_display_lock(100)) {
-            lv_timer_handler();
-
-            // while (auto const received = queue_.receive(Duration::none())) {
-            //     lv_label_set_text(label_, received->c_str());
-            // }
-
-            bsp_display_unlock();
-        }
-
-        xTaskDelayUntil(&lastRefresh, refreshDelay.ticks());
-    }
+    bsp_display_lock(0);
+    lv_label_set_text(label_, text.c_str());
+    bsp_display_unlock();
 }

@@ -6,13 +6,18 @@ idf_component_register(
         Application.cpp
         Application.hpp
 #        Arduino.hpp
-#        AudioBuffer.hpp
+        AudioBuffer.cpp
+        AudioBuffer.hpp
+        AudioSession.cpp
+        AudioSession.hpp
         Display.cpp
         Display.hpp
         Event.hpp
         Function.hpp
         Json.cpp
         Json.hpp
+        MarvinSession.cpp
+        MarvinSession.hpp
         Memory.cpp
         Memory.hpp
 #        Microphone.cpp
@@ -28,8 +33,8 @@ idf_component_register(
         Time.hpp
         Timer.cpp
         Timer.hpp
-#        WebSocket.cpp
-#        WebSocket.hpp
+        WebSocket.cpp
+        WebSocket.hpp
         WiFi.cpp
         WiFi.hpp
 #        WsStreamer.cpp
@@ -44,4 +49,5 @@ idf_component_register(
         mqtt
         esp_websocket_client
         arduinojson
+        at581x
 )

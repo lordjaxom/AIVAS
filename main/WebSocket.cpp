@@ -27,14 +27,17 @@ struct WebSocket::Helpers
     }
 };
 
-WebSocket::WebSocket(char const* host, uint16_t port, char const* path)
-    : uri_(str("ws://", host, ":", port, path))
+WebSocket::WebSocket(std::string_view const host, std::uint16_t const port, std::string_view const path,
+                     Callback const& connectCallback, Callback const& disconnectCallback)
+    : uri_{str("ws://", host, ":", port, path)},
+      connectCallback_{connectCallback},
+      disconnectCallback_{disconnectCallback}
 {
     esp_websocket_client_config_t config = {};
     config.uri = uri_.c_str();
 
     handle_ = esp_websocket_client_init(&config);
-    configASSERT(handle_ != nullptr);
+    assert(handle_ != nullptr);
 
     ESP_ERROR_CHECK(esp_websocket_register_events(handle_, WEBSOCKET_EVENT_ANY, &Helpers::wsClientAnyEvent, this));
 
@@ -75,7 +78,7 @@ void WebSocket::wsConnected()
     ESP_LOGI(TAG, "connection to WebSocket established");
 
     connected_ = true;
-    connectEvent();
+    connectCallback_();
 }
 
 void WebSocket::wsDisconnected()
@@ -83,5 +86,5 @@ void WebSocket::wsDisconnected()
     ESP_LOGI(TAG, "connection to WebSocket lost");
 
     connected_ = false;
-    disconnectEvent();
+    disconnectCallback_();
 }

@@ -47,4 +47,7 @@ using idf_internal_memory_resource = idf_memory_resource<MALLOC_CAP_INTERNAL>;
 extern idf_psram_memory_resource psram_memory_resource;
 extern idf_internal_memory_resource internal_memory_resource;
 
+extern std::pmr::polymorphic_allocator<> psram_allocator;
+extern std::pmr::polymorphic_allocator<> internal_allocator;
+
 #endif
