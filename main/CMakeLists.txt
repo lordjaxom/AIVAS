@@ -1,8 +1,6 @@
 idf_component_register(
     SRCS
         AIVAS.cpp
-#        AfeSession.cpp
-#        AfeSession.hpp
         Application.cpp
         Application.hpp
 #        Arduino.hpp
@@ -20,12 +18,12 @@ idf_component_register(
         MarvinSession.hpp
         Memory.cpp
         Memory.hpp
-#        Microphone.cpp
-#        Microphone.hpp
         Mqtt.cpp
         Mqtt.hpp
         Queue.cpp
         Queue.hpp
+        Sensors.cpp
+        Sensors.hpp
         Singleton.hpp
         String.hpp
         Task.cpp
@@ -37,8 +35,6 @@ idf_component_register(
         WebSocket.hpp
         WiFi.cpp
         WiFi.hpp
-#        WsStreamer.cpp
-#        WsStreamer.hpp
     INCLUDE_DIRS .
     REQUIRES
         esp_wifi
@@ -50,4 +46,5 @@ idf_component_register(
         esp_websocket_client
         arduinojson
         at581x
+        aht20
 )

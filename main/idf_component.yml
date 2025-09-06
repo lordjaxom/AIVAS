@@ -9,3 +9,4 @@ dependencies:
   espressif/esp_websocket_client: '*'
   bblanchon/arduinojson: '*'
   espressif/at581x: '*'
+  espressif/aht20: '*'

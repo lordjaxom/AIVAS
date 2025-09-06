@@ -16,8 +16,9 @@
 #include "Mqtt.hpp"
 #include "WiFi.hpp"
 
+#include "Sensors.hpp"
 #include "Timer.hpp"
-#include <bsp/esp-box-3.h>
+#include "esp_log.h"
 
 extern "C" void app_main()
 {
@@ -26,13 +27,21 @@ extern "C" void app_main()
     [[maybe_unused]] Application app{"Office-Aivas-Companion"};
     [[maybe_unused]] WiFi wiFi{"VillaKunterbunt", "sacomoco02047781"};
     [[maybe_unused]] Mqtt mqtt{"openhab"};
+    [[maybe_unused]] Sensors radarSensor;
     [[maybe_unused]] Display display;
     [[maybe_unused]] AudioSession audioSession;
     [[maybe_unused]] MarvinSession marvinSession;
 
-
     Timer radarTimer{"radar", [] {
+        ESP_LOGI("AIVAS", "radar sensor state is %d, temperature %f, hum %f", Sensors::get().radarState(),
+            Sensors::get().temperature(), Sensors::get().humidity());
+        if (Sensors::get().radarState()) {
+            Display::get().brightness(100);
+        } else {
+            Display::get().brightness(10);
+        }
     }};
+    radarTimer.start(Duration::millis(1000), true);
 
     app.run();
 }
