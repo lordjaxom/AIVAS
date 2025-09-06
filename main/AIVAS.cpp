@@ -24,7 +24,7 @@ extern "C" void app_main()
     Application app{"Office-Aivas-Companion"};
     WiFi wiFi{"VillaKunterbunt", "sacomoco02047781"};
     Mqtt mqtt{"openhab"};
-    // Display display;
+    Display display;
 
     Task task{"task", []{}, StackDepth{8192}};
 

@@ -7,7 +7,16 @@ static constexpr auto TAG = "Display";
 Display::Display()
     // : queue_{8}
 {
-    ESP_ERROR_CHECK(bsp_display_start() ? ESP_OK : ESP_FAIL);
+    bsp_display_cfg_t config{
+        .lvgl_port_cfg = ESP_LVGL_PORT_INIT_CONFIG(),
+        .buffer_size = BSP_LCD_H_RES * CONFIG_BSP_LCD_DRAW_BUF_HEIGHT,
+        .double_buffer = false,
+        .flags = {
+            .buff_dma = 1,
+            .buff_spiram = 0
+        }
+    };
+    ESP_ERROR_CHECK(bsp_display_start_with_config(&config) ? ESP_OK : ESP_FAIL);
     ESP_ERROR_CHECK(bsp_display_brightness_set(100));
 
     ESP_ERROR_CHECK(bsp_display_lock(0) ? ESP_OK : ESP_FAIL);
