@@ -4,21 +4,16 @@
 
 static constexpr auto TAG{"Task"};
 
-Task::Task(char const* name, unsigned const priority, int const core, Runnable runnable)
+Task::Task(char const* name, uint32_t const stackDepth, unsigned const priority, int const core,
+           Runnable const& runnable)
     : name_{name},
-      runnable_{std::move(runnable)}
+      runnable_{runnable}
 {
-    auto res = xTaskCreatePinnedToCore(
+    auto const res = xTaskCreatePinnedToCore(
         [](auto param) { static_cast<Task*>(param)->run(); },
-        name_, 4096, this, priority, &handle_, core
+        name_, stackDepth, this, priority, &handle_, core
     );
-    ESP_LOGI(TAG, "background task %s started with result %d", name_, res);
-    configASSERT(res == pdPASS && handle_ != nullptr);
-}
-
-Task::Task(char const* name, Runnable runnable)
-    : Task{name, 2, tskNO_AFFINITY, std::move(runnable)}
-{
+    assert(res == pdPASS && handle_ != nullptr);
 }
 
 Task::~Task()

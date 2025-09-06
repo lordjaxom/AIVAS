@@ -6,8 +6,13 @@
 
 #include <esp_heap_caps.h>
 
+struct idf_resource_base : std::pmr::memory_resource
+{
+    virtual void* reallocate(void* ptr, std::size_t new_size) = 0;
+};
+
 template<uint32_t Caps, bool Default>
-struct idf_resource final : std::pmr::memory_resource
+struct idf_resource final : idf_resource_base
 {
     std::atomic<std::size_t> alloc_count;
     std::atomic<std::size_t> free_count;
@@ -17,13 +22,19 @@ struct idf_resource final : std::pmr::memory_resource
         if constexpr (Default) std::pmr::set_default_resource(this);
     }
 
+    void* reallocate(void* ptr, std::size_t const new_size) override
+    {
+        return heap_caps_realloc(ptr, new_size, Caps | MALLOC_CAP_8BIT);
+    }
+
     void* do_allocate(std::size_t const size, std::size_t) override
     {
         alloc_count += size;
-        return heap_caps_malloc(size, Caps | MALLOC_CAP_8BIT);
+        if (auto const ptr = heap_caps_malloc(size, Caps | MALLOC_CAP_8BIT); ptr != nullptr) return ptr;
+        throw std::bad_alloc{};
     }
 
-    void do_deallocate(void* ptr, std::size_t size, std::size_t) override
+    void do_deallocate(void* ptr, std::size_t const size, std::size_t) override
     {
         free_count += size;
         heap_caps_free(ptr);

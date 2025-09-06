@@ -10,28 +10,17 @@
 using String = std::pmr::string;
 
 namespace detail {
+    inline void str_append(String& result, std::string_view const& arg)
+    {
+        result += arg;
+    }
+
     template<typename T>
-    auto str_append(String& result, T arg) ->
-        std::enable_if_t<!std::is_convertible_v<T, std::string_view>>
+    requires(!std::is_convertible_v<T, std::string_view>)
+    void str_append(String& result, T arg)
     {
         using std::to_string;
         result += to_string(arg);
-    }
-
-    template<typename T>
-    auto str_append(String& result, T&& arg) ->
-        std::enable_if_t<std::is_convertible_v<T, std::string_view> >
-    {
-        result += std::forward<T>(arg);
-    }
-
-    inline void str(String&) {}
-
-    template<typename Arg0, typename... Args>
-    void str(String& result, Arg0&& arg0, Args&&... args)
-    {
-        str_append(result, std::forward<Arg0>(arg0));
-        str(result, std::forward<Args>(args)...);
     }
 } // namespace detail
 
@@ -39,7 +28,7 @@ template<typename... Args>
 String str(Args&&... args)
 {
     String result;
-    detail::str(result, std::forward<Args>(args)...);
+    (detail::str_append(result, std::forward<Args>(args)), ...);
     return result;
 }
 

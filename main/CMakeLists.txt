@@ -13,6 +13,8 @@ idf_component_register(
 #        Display.hpp
         Event.hpp
         Function.hpp
+        Json.cpp
+        Json.hpp
         Memory.cpp
         Memory.hpp
 #        Microphone.cpp
@@ -23,8 +25,8 @@ idf_component_register(
         Queue.hpp
         Singleton.hpp
         String.hpp
-#        Task.cpp
-#        Task.hpp
+        Task.cpp
+        Task.hpp
         Time.hpp
         Timer.cpp
         Timer.hpp
@@ -43,5 +45,5 @@ idf_component_register(
         esp-boost
         mqtt
         esp_websocket_client
-        nlohmann-json
+        arduinojson
 )
