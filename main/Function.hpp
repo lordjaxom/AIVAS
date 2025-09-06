@@ -53,7 +53,7 @@ public:
     template<typename T>
     Function(T const& object, Ret (T::* member)(Args...) const) noexcept
         : free_fn_or_mem_fn_obj{const_cast<T*>(&object)},
-          stub_fn{&mem_fn_stub<T, Ret (T::*)(Args...) const>}
+          stub_fn{&mem_fn_stub<T const, Ret (T::*)(Args...) const>}
     {
         static_assert(sizeof(member) <= maxMemberPtrSize, "member function pointer too large");
         // ReSharper disable once CppDFANotInitializedField

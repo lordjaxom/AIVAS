@@ -3,9 +3,9 @@
 #include "Application.hpp"
 #include "Timer.hpp"
 
-Timer::Timer(char const* name, Handler handler)
+Timer::Timer(char const* name, Handler const& handler)
     : name_{name},
-      handler_{std::move(handler)},
+      handler_{handler},
       handle_{
           xTimerCreate(
               name_, 1, false, this,

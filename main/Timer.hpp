@@ -11,7 +11,7 @@ class Timer
     using Handler = Function<void()>;
 
 public:
-    Timer(char const* name, Handler handler);
+    Timer(char const* name, Handler const& handler);
     Timer(Timer const&) = delete;
     ~Timer();
 

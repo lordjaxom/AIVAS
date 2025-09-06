@@ -25,8 +25,7 @@ public:
     template<typename... Args>
     void operator()(Args&&... args)
     {
-        for (auto handlers{std::move(handlers_)};
-             auto const& handler: handlers) {
+        for (auto handlers{std::move(handlers_)}; auto const& handler: handlers) {
             handler(std::forward<Args>(args)...);
         }
     }
