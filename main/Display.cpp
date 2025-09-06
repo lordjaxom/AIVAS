@@ -5,7 +5,7 @@
 static constexpr auto TAG = "Display";
 
 Display::Display()
-    : queue_{8}
+    // : queue_{8}
 {
     ESP_ERROR_CHECK(bsp_display_start() ? ESP_OK : ESP_FAIL);
     ESP_ERROR_CHECK(bsp_display_brightness_set(100));
@@ -22,7 +22,7 @@ Display::Display()
     lv_obj_center(label_);
     bsp_display_unlock();
 
-    task_.emplace("display", [this] { displayTask(); });
+    task_.emplace("display", Function<void()>{*this, &Display::displayTask}, StackDepth{2048});
 
     ESP_LOGI(TAG, "display successfully initialized");
 }
@@ -31,11 +31,11 @@ Display::~Display()
 {
     running_ = false;
 }
-
-void Display::postText(String text) const
-{
-    queue_.acquire(std::move(text));
-}
+//
+// void Display::postText(String text) const
+// {
+//     queue_.acquire(std::move(text));
+// }
 
 void Display::displayTask() const
 {
@@ -44,9 +44,9 @@ void Display::displayTask() const
         if (bsp_display_lock(100)) {
             lv_timer_handler();
 
-            while (auto const received = queue_.receive(Duration::none())) {
-                lv_label_set_text(label_, received->c_str());
-            }
+            // while (auto const received = queue_.receive(Duration::none())) {
+            //     lv_label_set_text(label_, received->c_str());
+            // }
 
             bsp_display_unlock();
         }

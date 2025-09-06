@@ -9,7 +9,7 @@
 namespace detail {
     struct ResourceAllocator final : ArduinoJson::Allocator
     {
-        explicit ResourceAllocator(idf_resource_base* resource);
+        explicit ResourceAllocator(idf_memory_resource_base* resource);
         ~ResourceAllocator() = default;
 
         void* allocate(size_t size) override;
@@ -17,7 +17,7 @@ namespace detail {
         void* reallocate(void* ptr, size_t new_size) override;
 
     private:
-        idf_resource_base* resource_;
+        idf_memory_resource_base* resource_;
     };
 }
 

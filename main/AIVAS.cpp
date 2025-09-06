@@ -9,6 +9,7 @@
 // );
 
 #include "Application.hpp"
+#include "Display.hpp"
 #include "Mqtt.hpp"
 #include "WiFi.hpp"
 
@@ -18,9 +19,12 @@
 
 extern "C" void app_main()
 {
+    std::pmr::set_default_resource(&psram_memory_resource);
+
     Application app{"Office-Aivas-Companion"};
     WiFi wiFi{"VillaKunterbunt", "sacomoco02047781"};
     Mqtt mqtt{"openhab"};
+    // Display display;
 
     Task task{"task", []{}, StackDepth{8192}};
 

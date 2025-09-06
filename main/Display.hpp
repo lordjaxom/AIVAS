@@ -5,22 +5,21 @@
 
 #include <misc/lv_types.h>
 
-#include "Component.hpp"
-#include "Queue.hpp"
-#include "String.hpp"
+#include "Singleton.hpp"
 #include "Task.hpp"
 #include "Time.hpp"
 
-class Display : public Component<Scope::singleton>
+class Display : public Singleton<Display>
 {
-    static constexpr auto refreshDelay{Duration::millis(1000 / 25)}; // 25 Hz
+    static constexpr auto refreshRateHz{25};
+    static constexpr auto refreshDelay{Duration::millis(1000 / refreshRateHz)};
 
 public:
     Display();
     Display(Display const&) = delete;
     ~Display();
 
-    void postText(String text) const;
+    // void postText(String text) const;
 
     // // Helligkeit 0..100
     // void setBrightness(uint8_t percent);
@@ -35,14 +34,8 @@ private:
     // void applyTextLocked(const char* txt); // nur im UI-Task aufrufen (LVGL locked)
 
     lv_obj_t* label_{};
-    Ringbuffer<String> queue_;
     std::optional<Task> task_;
     bool volatile running_{true};
 };
-
-inline auto display()
-{
-    return component<Display>();
-}
 
 #endif

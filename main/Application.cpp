@@ -31,10 +31,10 @@ void Application::run() const
         printf("free SPIRAM 8bit:     %u\n", heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT));
         printf("largest SPIRAM blk:   %u\n", heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT));
 
-        printf("psram allocs:         %u\n", psram_resource.alloc_count.load());
-        printf("psram freed:          %u\n", psram_resource.free_count.load());
-        printf("internal allocs:      %u\n", internal_resource.alloc_count.load());
-        printf("internal freed:       %u\n", internal_resource.free_count.load());
+        printf("psram allocs:         %u\n", psram_memory_resource.alloc_count.load());
+        printf("psram freed:          %u\n", psram_memory_resource.free_count.load());
+        printf("internal allocs:      %u\n", internal_memory_resource.alloc_count.load());
+        printf("internal freed:       %u\n", internal_memory_resource.free_count.load());
 
         if (auto const received = dispatchQueue_.receive(Duration::millis(5000))) {
             (*received)();

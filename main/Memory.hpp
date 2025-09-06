@@ -6,21 +6,16 @@
 
 #include <esp_heap_caps.h>
 
-struct idf_resource_base : std::pmr::memory_resource
+struct idf_memory_resource_base : std::pmr::memory_resource
 {
     virtual void* reallocate(void* ptr, std::size_t new_size) = 0;
 };
 
-template<uint32_t Caps, bool Default>
-struct idf_resource final : idf_resource_base
+template<uint32_t Caps>
+struct idf_memory_resource final : idf_memory_resource_base
 {
     std::atomic<std::size_t> alloc_count;
     std::atomic<std::size_t> free_count;
-
-    idf_resource()
-    {
-        if constexpr (Default) std::pmr::set_default_resource(this);
-    }
 
     void* reallocate(void* ptr, std::size_t const new_size) override
     {
@@ -46,10 +41,10 @@ struct idf_resource final : idf_resource_base
     }
 };
 
-using idf_psram_resource = idf_resource<MALLOC_CAP_SPIRAM, true>;
-using idf_internal_resource = idf_resource<MALLOC_CAP_INTERNAL, false>;
+using idf_psram_memory_resource = idf_memory_resource<MALLOC_CAP_SPIRAM>;
+using idf_internal_memory_resource = idf_memory_resource<MALLOC_CAP_INTERNAL>;
 
-extern idf_psram_resource psram_resource;
-extern idf_internal_resource internal_resource;
+extern idf_psram_memory_resource psram_memory_resource;
+extern idf_internal_memory_resource internal_memory_resource;
 
 #endif

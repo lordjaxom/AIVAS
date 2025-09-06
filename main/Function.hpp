@@ -72,7 +72,7 @@ public:
 
     Ret operator()(Args... args) const
     {
-        return stub_fn(free_fn_or_mem_fn_obj, mem_fn.data(), std::forward<Args>(args)...);
+        return stub_fn(free_fn_or_mem_fn_obj, mem_fn.data(), std::forward<decltype(args)>(args)...);
     }
 
 private:

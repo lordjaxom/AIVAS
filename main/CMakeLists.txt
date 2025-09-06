@@ -7,10 +7,8 @@ idf_component_register(
         Application.hpp
 #        Arduino.hpp
 #        AudioBuffer.hpp
-#        Context.cpp
-#        Context.hpp
-#        Display.cpp
-#        Display.hpp
+        Display.cpp
+        Display.hpp
         Event.hpp
         Function.hpp
         Json.cpp

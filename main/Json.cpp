@@ -2,7 +2,7 @@
 
 #include <memory>
 
-detail::ResourceAllocator::ResourceAllocator(idf_resource_base* resource)
+detail::ResourceAllocator::ResourceAllocator(idf_memory_resource_base* resource)
     : resource_{resource}
 {
 }
@@ -33,6 +33,6 @@ ARDUINOJSON_END_PUBLIC_NAMESPACE
 
 ArduinoJson::JsonDocument jsonDocument()
 {
-    static detail::ResourceAllocator allocator{&psram_resource};
+    static detail::ResourceAllocator allocator{&psram_memory_resource};
     return ArduinoJson::JsonDocument{&allocator};
 }
