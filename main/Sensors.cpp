@@ -27,7 +27,12 @@ static at581x_dev_handle_t initRadarSensor()
 {
     static at581x_dev_handle_t handle;
     if (handle == nullptr) {
-        constexpr at581x_default_cfg_t defaults = ATH581X_INITIALIZATION_CONFIG();
+        at581x_default_cfg_t defaults = ATH581X_INITIALIZATION_CONFIG();
+        defaults.trig_base_tm_cfg = 1000;
+        defaults.trig_keep_tm_cfg = 5000;
+        defaults.delta_cfg = 100;
+        defaults.gain_cfg = AT581X_STAGE_GAIN_4;
+        defaults.power_cfg = AT581X_POWER_91uA;
         at581x_i2c_config_t const config = {
             .bus_inst = initExpandI2c(),
             .i2c_addr = AT581X_ADDRRES_0, // ggf. auf *_1 ändern, je nach Board
