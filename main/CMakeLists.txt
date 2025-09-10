@@ -1,5 +1,8 @@
+file(GLOB IMG_SRCS "${CMAKE_CURRENT_LIST_DIR}/generated/*.c")
+
 idf_component_register(
     SRCS
+        ${IMG_SRCS}
         AIVAS.cpp
         Application.cpp
         Application.hpp
@@ -47,4 +50,5 @@ idf_component_register(
         arduinojson
         at581x
         aht20
+        lvgl
 )

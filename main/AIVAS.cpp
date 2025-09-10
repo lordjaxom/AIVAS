@@ -37,8 +37,10 @@ extern "C" void app_main()
             Sensors::get().temperature(), Sensors::get().humidity());
         if (Sensors::get().radarState()) {
             Display::get().brightness(100);
+            Display::get().listen();
         } else {
             Display::get().brightness(10);
+            Display::get().sleep();
         }
     }};
     radarTimer.start(Duration::millis(1000), true);

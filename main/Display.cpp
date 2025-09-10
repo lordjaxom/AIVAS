@@ -9,6 +9,15 @@
 
 static constexpr auto TAG = "Display";
 
+LV_IMAGE_DECLARE(background);
+LV_IMAGE_DECLARE(body);
+LV_IMAGE_DECLARE(body_eye_screen);
+LV_IMAGE_DECLARE(body_shadow);
+LV_IMAGE_DECLARE(eyes_listen);
+LV_IMAGE_DECLARE(eyes_listen_2);
+LV_IMAGE_DECLARE(eyes_sleep);
+// LV_IMAGE_DECLARE(get_body_eyes);
+
 Display::Display()
 // : queue_{8}
 {
@@ -27,13 +36,32 @@ Display::Display()
     ESP_ERROR_CHECK(bsp_display_lock(0) ? ESP_OK : ESP_FAIL);
 
     auto const screen = lv_screen_active();
-    label_ = lv_label_create(screen);
-    lv_obj_set_size(label_, LV_PCT(100), LV_PCT(20));
-    lv_label_set_long_mode(label_, LV_LABEL_LONG_WRAP);
-    lv_label_set_text(label_, "");
-    lv_obj_set_style_text_align(label_, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_style_text_font(label_, LV_FONT_DEFAULT, 0);
-    lv_obj_center(label_);
+
+    auto const img_background = lv_img_create(screen);
+    lv_img_set_src(img_background, &background);
+    lv_obj_align(img_background, LV_ALIGN_TOP_LEFT, 0, 0);
+    auto const img_body = lv_img_create(screen);
+    lv_img_set_src(img_body, &body);
+    lv_obj_align(img_body, LV_ALIGN_TOP_LEFT, 101, 61);
+    auto const img_body_shadow = lv_img_create(screen);
+    lv_img_set_src(img_body_shadow, &body_shadow);
+    lv_obj_align(img_body_shadow, LV_ALIGN_TOP_LEFT, 114, 162);
+
+    img_sleep_ = lv_img_create(screen);
+    lv_img_set_src(img_sleep_, &body_eye_screen);
+    lv_obj_align(img_sleep_, LV_ALIGN_TOP_LEFT, 140, 110);
+    auto const img_eyes_sleep = lv_img_create(img_sleep_);
+    lv_img_set_src(img_eyes_sleep, &eyes_sleep);
+    lv_obj_align(img_eyes_sleep, LV_ALIGN_TOP_LEFT, 13, 12);
+
+    img_listen_ = lv_img_create(screen);
+    lv_img_set_src(img_listen_, &body_eye_screen);
+    lv_obj_align(img_listen_, LV_ALIGN_TOP_LEFT, 130, 110);
+    auto const img_eyes_listen = lv_img_create(img_listen_);
+    lv_img_set_src(img_eyes_listen, &eyes_listen);
+    lv_obj_align(img_eyes_listen, LV_ALIGN_TOP_LEFT, 19,10);
+    lv_obj_set_flag(img_listen_, LV_OBJ_FLAG_HIDDEN, true);
+
     bsp_display_unlock();
 
     ESP_LOGI(TAG, "display successfully initialized");
@@ -47,7 +75,20 @@ void Display::brightness(int const level) // NOLINT(*-convert-member-functions-t
 
 void Display::showText(String const& text) const
 {
+}
+
+void Display::listen() const
+{
     bsp_display_lock(0);
-    lv_label_set_text(label_, text.c_str());
+    lv_obj_set_flag(img_sleep_, LV_OBJ_FLAG_HIDDEN, true);
+    lv_obj_set_flag(img_listen_, LV_OBJ_FLAG_HIDDEN, false);
+    bsp_display_unlock();
+}
+
+void Display::sleep() const
+{
+    bsp_display_lock(0);
+    lv_obj_set_flag(img_sleep_, LV_OBJ_FLAG_HIDDEN, false);
+    lv_obj_set_flag(img_listen_, LV_OBJ_FLAG_HIDDEN, true);
     bsp_display_unlock();
 }

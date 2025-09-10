@@ -16,8 +16,12 @@ public:
 
     void showText(String const& text) const;
 
+    void listen() const;
+    void sleep() const;
+
 private:
-    lv_obj_t* label_{};
+    lv_obj_t* img_sleep_{};
+    lv_obj_t* img_listen_{};
 };
 
 #endif
