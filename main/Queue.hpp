@@ -40,6 +40,7 @@ public:
 
     [[nodiscard]] Pointer acquire(Duration timeout = Duration::max()) const;
     [[nodiscard]] Pointer receive(Duration timeout = Duration::max()) const;
+    bool sendFromISR(const void* item) const;
 
 private:
     std::size_t capacity_;
@@ -92,6 +93,12 @@ public:
         auto itemPtr = Base::receive(timeout);
         auto destroy = [](auto item) { std::destroy_at(static_cast<T*>(item)); };
         return {static_cast<T*>(itemPtr.release()), itemPtr.get_deleter().destroy_with(destroy)};
+    }
+
+    bool sendFromISR(T const& item) const
+    {
+        static_assert(std::is_trivially_copyable_v<T>);
+        return Base::sendFromISR(&item);
     }
 };
 

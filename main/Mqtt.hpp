@@ -16,9 +16,6 @@ class Mqtt : public Singleton<Mqtt>
 {
     using Subscriber = Function<void(std::string_view payload)>;
 
-    struct Helpers;
-    friend Helpers;
-
 public:
     explicit Mqtt(std::string_view host, uint16_t port = 1883);
     Mqtt(Mqtt const&) = delete;
@@ -33,6 +30,8 @@ public:
     void subscribe(String topic, Subscriber handler);
 
 private:
+    static void mqttClientEventHandler(void* arg, esp_event_base_t, int32_t event_id, void* event_data);
+
     void connectToMqtt();
     void wiFiDisconnected();
     void mqttConnected();

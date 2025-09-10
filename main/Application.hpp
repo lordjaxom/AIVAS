@@ -6,6 +6,7 @@
 #include "Function.hpp"
 #include "Queue.hpp"
 #include "Singleton.hpp"
+#include "Timer.hpp"
 
 class Application : public Singleton<Application>
 {
@@ -18,11 +19,15 @@ public:
 
     [[noreturn]] void run() const;
 
-    void dispatch(Runnable runnable) const;
+    void dispatch(Runnable const& runnable) const;
+    void dispatchFromISR(Runnable const& runnable) const;
 
 private:
+    static void printMemoryUsage();
+
     std::string_view clientId_;
     Queue<Runnable> dispatchQueue_{4};
+    Timer usageTimer_;
 };
 
 #endif

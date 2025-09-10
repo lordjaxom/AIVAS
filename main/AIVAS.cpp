@@ -27,10 +27,14 @@ extern "C" void app_main()
     [[maybe_unused]] Application app{"Office-Aivas-Companion"};
     [[maybe_unused]] WiFi wiFi{"VillaKunterbunt", "sacomoco02047781"};
     [[maybe_unused]] Mqtt mqtt{"openhab"};
-    [[maybe_unused]] Sensors radarSensor;
+    [[maybe_unused]] Sensors sensors;
     [[maybe_unused]] Display display;
     [[maybe_unused]] AudioSession audioSession;
     [[maybe_unused]] MarvinSession marvinSession;
+
+    auto subscription{sensors.radarStateEvent.connect([](bool const state) {
+        ESP_LOGI("AIVAS", "radar sensor state changed to %d", state ? 1 : 0);
+    })};
 
     Timer radarTimer{"radar", [] {
         ESP_LOGI("AIVAS", "radar sensor state is %d, temperature %f, hum %f", Sensors::get().radarState(),

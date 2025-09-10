@@ -15,31 +15,6 @@ static String toBaseTopic(std::string_view clientId)
     return baseTopic;
 }
 
-struct Mqtt::Helpers
-{
-    static void mqttClientAnyEvent(void* arg, esp_event_base_t, int32_t const event_id, void* event_data)
-    {
-        auto* client = static_cast<Mqtt*>(arg);
-        auto const* data = static_cast<esp_mqtt_event_handle_t>(event_data);
-        switch (event_id) {
-            case MQTT_EVENT_CONNECTED:
-                client->mqttConnected();
-                break;
-            case MQTT_EVENT_DISCONNECTED:
-                client->mqttDisconnected();
-                break;
-            case MQTT_EVENT_DATA:
-                client->mqttMessage(
-                    {data->topic, static_cast<std::size_t>(data->topic_len)},
-                    {data->data, static_cast<std::size_t>(data->data_len)}
-                );
-                break;
-            default:
-                break;
-        }
-    }
-};
-
 Mqtt::Mqtt(std::string_view host, uint16_t const port)
     : uri_{str("mqtt://", host, ":", port)},
       baseTopic_{toBaseTopic(Application::get().clientId())},
@@ -61,7 +36,7 @@ Mqtt::Mqtt(std::string_view host, uint16_t const port)
     handle_ = esp_mqtt_client_init(&config);
     assert(handle_ != nullptr);
 
-    ESP_ERROR_CHECK(esp_mqtt_client_register_event(handle_, MQTT_EVENT_ANY, &Helpers::mqttClientAnyEvent, this));
+    ESP_ERROR_CHECK(esp_mqtt_client_register_event(handle_, MQTT_EVENT_ANY, &Mqtt::mqttClientEventHandler, this));
 
     if (WiFi::get().connected()) connectToMqtt();
 }
@@ -80,14 +55,36 @@ void Mqtt::publish(String const& topic, std::string_view const payload, bool con
 void Mqtt::publish(char const* topic, std::string_view const payload, bool const retain) const
 {
     if (!connected_) return;
-    esp_mqtt_client_publish(handle_, topic, payload.data(), payload.size(), 1, retain);
+    esp_mqtt_client_publish(handle_, topic, payload.data(), static_cast<int>(payload.size()), 1, retain);
 }
 
 void Mqtt::subscribe(String topic, Subscriber handler)
 {
-    if (auto const it = subscriptions_.emplace(std::move(topic), std::move(handler));
+    if (auto const it = subscriptions_.emplace(std::move(topic), handler);
         connected_ && subscriptions_.count(it->first) == 1) {
         mqttSubscribe(it->first);
+    }
+}
+
+void Mqtt::mqttClientEventHandler(void* arg, esp_event_base_t, int32_t const event_id, void* event_data)
+{
+    auto& self = *static_cast<Mqtt*>(arg);
+    auto const* data = static_cast<esp_mqtt_event_handle_t>(event_data);
+    switch (event_id) {
+        case MQTT_EVENT_CONNECTED:
+            self.mqttConnected();
+            break;
+        case MQTT_EVENT_DISCONNECTED:
+            self.mqttDisconnected();
+            break;
+        case MQTT_EVENT_DATA:
+            self.mqttMessage(
+                {data->topic, static_cast<std::size_t>(data->topic_len)},
+                {data->data, static_cast<std::size_t>(data->data_len)}
+            );
+            break;
+        default:
+            break;
     }
 }
 

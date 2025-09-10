@@ -52,3 +52,8 @@ Queue<void>::Pointer Queue<void>::receive(Duration const timeout) const
     }
     return nullptr;
 }
+
+bool Queue<void>::sendFromISR(void const* item) const
+{
+    return xRingbufferSendFromISR(handle_, item, itemSize_, nullptr);
+}
